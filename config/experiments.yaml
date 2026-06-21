@@ -1,0 +1,149 @@
+# ============================================================
+# EXPERIMENT REGISTRY — Phase 1 Candidate Edges
+# ============================================================
+# Each block defines a hypothesis to test.
+# Parameters are grids; all combinations are tested.
+# Use interpretable ranges — not brute-force mining.
+
+momentum:
+  - id: "MOM_01"
+    description: "Positive N-day return momentum"
+    family: "momentum"
+    feature: "rolling_return"
+    lookbacks: [5, 10, 20, 60]
+    direction: "long"
+    threshold: 0.0
+    holdouts: [1, 3, 5, 10, 20]
+
+  - id: "MOM_02"
+    description: "Momentum confirmed by 200d trend filter"
+    family: "momentum"
+    feature: "rolling_return"
+    lookbacks: [20, 60]
+    direction: "long"
+    threshold: 0.0
+    regime_filter: "trend_bull"
+    holdouts: [1, 3, 5, 10, 20]
+
+  - id: "MOM_03"
+    description: "Momentum following volatility contraction"
+    family: "momentum"
+    feature: "rolling_return"
+    lookbacks: [10, 20]
+    direction: "long"
+    threshold: 0.0
+    vol_condition: "low"
+    holdouts: [1, 3, 5, 10, 20]
+
+mean_reversion:
+  - id: "MR_01"
+    description: "Extreme short-term decline (z-score below threshold)"
+    family: "mean_reversion"
+    feature: "zscore"
+    zscore_window: [10, 20]
+    thresholds: [-1.5, -2.0, -2.5]
+    direction: "long"
+    holdouts: [1, 3, 5]
+
+  - id: "MR_02"
+    description: "Low RSI reversion"
+    family: "mean_reversion"
+    feature: "rsi"
+    windows: [7, 14]
+    thresholds: [30, 35]
+    direction: "long"
+    holdouts: [1, 3, 5]
+
+  - id: "MR_03"
+    description: "Consecutive down sessions reversion"
+    family: "mean_reversion"
+    feature: "consecutive_down"
+    streaks: [3, 4, 5]
+    direction: "long"
+    regime_filter: "not_bear"
+    holdouts: [1, 3, 5]
+
+breakout:
+  - id: "BRK_01"
+    description: "Prior N-day high breakout"
+    family: "breakout"
+    feature: "high_breakout"
+    lookbacks: [20, 50, 100]
+    direction: "long"
+    holdouts: [1, 3, 5, 10, 20]
+
+  - id: "BRK_02"
+    description: "Breakout following volatility compression"
+    family: "breakout"
+    feature: "high_breakout"
+    lookbacks: [20, 50]
+    vol_condition: "low"
+    direction: "long"
+    holdouts: [1, 3, 5, 10, 20]
+
+  - id: "BRK_03"
+    description: "Prior N-day low breakdown (short)"
+    family: "breakout"
+    feature: "low_breakdown"
+    lookbacks: [20, 50]
+    direction: "short"
+    holdouts: [1, 3, 5, 10, 20]
+
+trend:
+  - id: "TRD_01"
+    description: "Fast MA above slow MA (trend following)"
+    family: "trend"
+    feature: "ma_cross"
+    fast_windows: [20, 50]
+    slow_windows: [100, 200]
+    direction: "long"
+    holdouts: [1, 3, 5, 10, 20]
+
+  - id: "TRD_02"
+    description: "Pullback within established uptrend"
+    family: "trend"
+    feature: "pullback_in_trend"
+    trend_window: 200
+    pullback_window: [5, 10]
+    pullback_threshold: -0.02
+    direction: "long"
+    holdouts: [1, 3, 5, 10]
+
+gap:
+  - id: "GAP_01"
+    description: "Large gap-up continuation"
+    family: "gap"
+    feature: "gap_pct"
+    thresholds: [0.005, 0.01]
+    direction: "long"
+    holdouts: [1, 3, 5]
+
+  - id: "GAP_02"
+    description: "Large gap-down reversal"
+    family: "gap"
+    feature: "gap_pct"
+    thresholds: [-0.005, -0.01]
+    direction: "long"
+    holdouts: [1, 3, 5]
+
+calendar:
+  - id: "CAL_01"
+    description: "Day-of-week effect"
+    family: "calendar"
+    feature: "day_of_week"
+    days: [0, 1, 2, 3, 4]
+    direction: "long"
+    holdouts: [1]
+
+  - id: "CAL_02"
+    description: "Month-end effect (last 3 sessions)"
+    family: "calendar"
+    feature: "month_end"
+    direction: "long"
+    holdouts: [1, 3]
+
+# Minimum observations to consider a result credible
+min_observations: 30
+
+# Multiple testing control
+fdr_alpha: 0.10

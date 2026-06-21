@@ -1,0 +1,69 @@
+# ============================================================
+# COST PROFILES
+# All values in basis points unless noted.
+# ============================================================
+# IMPORTANT: ^NSEI is a research proxy.
+# These costs do NOT represent actual executable costs.
+# They are scenario assumptions for sensitivity testing.
+
+profiles:
+  # Zero-cost baseline — measures raw signal quality only
+  zero:
+    label: "Zero cost (research only)"
+    bps_per_side: 0.0
+    slippage_bps: 0.0
+    spread_bps: 0.0
+
+  # Conservative ETF (e.g., NIFTYBEES)
+  etf_conservative:
+    label: "ETF conservative"
+    brokerage_bps: 2.0
+    stt_bps: 1.0           # STT on delivery sell side
+    exchange_txn_bps: 0.35
+    sebi_bps: 0.01
+    gst_pct: 0.18          # 18% GST on brokerage+exchange charges
+    stamp_bps: 1.5         # Buy side only
+    spread_bps: 2.0
+    slippage_bps: 2.0
+    # Derived: effective round-trip bps (entry + exit)
+
+  # Aggressive ETF
+  etf_aggressive:
+    label: "ETF aggressive"
+    brokerage_bps: 3.0
+    stt_bps: 1.0
+    exchange_txn_bps: 0.35
+    sebi_bps: 0.01
+    gst_pct: 0.18
+    stamp_bps: 1.5
+    spread_bps: 4.0
+    slippage_bps: 5.0
+
+  # NIFTY Futures (intraday/BTST approximation — indicative only)
+  futures_conservative:
+    label: "Futures conservative"
+    brokerage_flat: 40.0   # INR per lot (flat fee brokers)
+    stt_bps: 0.1           # STT on futures sell side
+    exchange_txn_bps: 0.5
+    sebi_bps: 0.01
+    gst_pct: 0.18
+    stamp_bps: 0.15        # futures stamp duty (buy)
+    spread_bps: 2.0
+    slippage_bps: 3.0
+
+  futures_aggressive:
+    label: "Futures aggressive"
+    brokerage_flat: 40.0
+    stt_bps: 0.1
+    exchange_txn_bps: 0.5
+    sebi_bps: 0.01
+    gst_pct: 0.18
+    stamp_bps: 0.15
+    spread_bps: 5.0
+    slippage_bps: 8.0
+
+# Flat basis-point sweeps for sensitivity analysis (round trip, per trade)
+sensitivity_bps: [0, 5, 10, 15, 25, 50]
+
+# Default profile for backtests unless overridden
+default_profile: "etf_conservative"

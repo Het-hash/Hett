@@ -76,6 +76,30 @@ def main(config, experiments, force_refresh, skip_wf):
 
     # ── STEP 1: Data ──────────────────────────────────────────────────────────
     print("\n[1/7] Loading and validating data…")
+
+    # Reject synthetic data unconditionally — load_data() raises if cached source is GBM.
+    # This check is the outer gate before any data access.
+    safe_sym = cfg["data"]["symbol"].replace("^", "").replace("/", "_")
+    meta_path = Path("data/metadata") / f"{safe_sym}_1d_meta.json"
+    if meta_path.exists():
+        import json as _json
+        with open(meta_path) as _f:
+            _meta = _json.load(_f)
+        _src = _meta.get("source", "")
+        if "synthetic" in _src.lower() or "gbm" in _src.lower():
+            print("\n" + "="*70)
+            print("  HALTED: SYNTHETIC DATA IN CACHE")
+            print("="*70)
+            print("\n  The cached data is synthetic GBM — not real NIFTY 50 data.")
+            print("  Phase 1 strategy findings must never be based on synthetic data.")
+            print("\n  Provide real daily OHLC data and run:")
+            print("    python scripts/import_csv.py --file NIFTY_50_DAILY.csv")
+            print("\n  Data sources:")
+            print("    • NSE India  : https://www.nseindia.com/market-data/equity-stockIndices-data")
+            print("    • Yahoo Fin. : https://finance.yahoo.com/quote/%5ENSEI/history/")
+            print("    • Stooq      : https://stooq.com/q/d/l/?s=%5Ensei&i=d")
+            sys.exit(1)
+
     df, quality_report = load_data(
         symbol=cfg["data"]["symbol"],
         start_date=cfg["data"].get("start_date"),
@@ -83,6 +107,7 @@ def main(config, experiments, force_refresh, skip_wf):
         force_refresh=force_refresh or cfg["data"].get("force_refresh", False),
     )
     print(f"      ✓ {quality_report.total_rows} rows: {quality_report.first_date} → {quality_report.last_date}")
+    print(f"      Source: {quality_report.source}")
     if quality_report.confirmed_errors:
         print(f"      ⚠ {len(quality_report.confirmed_errors)} confirmed data errors")
 

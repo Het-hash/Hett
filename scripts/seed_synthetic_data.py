@@ -64,6 +64,26 @@ def generate_synthetic_nifty(
 
 if __name__ == "__main__":
     ensure_dirs()
+
+    # Guard: refuse to overwrite real data with synthetic data
+    from src.utils.paths import data_metadata_dir
+    from src.utils.serialization import load_json
+    meta_path = data_metadata_dir() / "NSEI_1d_meta.json"
+    if meta_path.exists():
+        meta = load_json(meta_path)
+        src = meta.get("source", "")
+        if "synthetic" not in src.lower() and "gbm" not in src.lower():
+            print(
+                "\n[REFUSED] Real NIFTY data already exists in cache.\n"
+                "synthetic seeder will not overwrite it.\n"
+                "Source in cache: " + src
+            )
+            sys.exit(0)
+
+    print("\n[WARNING] Generating SYNTHETIC GBM data for unit-test fixtures ONLY.")
+    print("         This data must NEVER be used for strategy research.")
+    print("         It will be stored with source='synthetic_gbm' to trigger")
+    print("         the pipeline guard in run_phase1.py.\n")
     logger.info("Generating synthetic NIFTY data (GBM, NOT real data)…")
     df = generate_synthetic_nifty()
     logger.info(f"Generated {len(df)} rows: {df.index[0].date()} → {df.index[-1].date()}")
